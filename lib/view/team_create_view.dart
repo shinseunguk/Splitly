@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:splitly/model/team_model.dart';
 import 'package:splitly/viewModel/team_create_view_model.dart';
 
 class TeamCreateView extends StatefulWidget {
-  final int? initTeamId;
-  final String? initialTeamName;
-  final String? initialLeader;
-  final List<String>? initialMembers;
+  final TeamModel? teamModel;
 
-  const TeamCreateView({
-    super.key,
-    this.initTeamId,
-    this.initialTeamName,
-    this.initialLeader,
-    this.initialMembers,
-  });
+  const TeamCreateView({super.key, this.teamModel});
 
   @override
   State<TeamCreateView> createState() => _TeamCreateViewState();
 }
 
 class _TeamCreateViewState extends State<TeamCreateView> {
-  final TeamCreateViewModel _viewModel = Get.put(TeamCreateViewModel());
+  final TeamViewModel _viewModel = Get.put(TeamViewModel());
   late final TextEditingController _teamNameController;
   late final TextEditingController _leaderController;
   late final List<TextEditingController> _memberControllers;
@@ -29,28 +21,29 @@ class _TeamCreateViewState extends State<TeamCreateView> {
   late final String _titleText;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _isEditMode = widget.initTeamId != null;
-    _titleText = _isEditMode ? '팀 수정' : '팀 생성';
-  }
-
-  @override
   void initState() {
     super.initState();
+    _isEditMode = widget.teamModel != null;
+    _titleText = _isEditMode ? '팀 수정' : '팀 생성';
     _teamNameController = TextEditingController(
-      text: widget.initialTeamName ?? '',
+      text: widget.teamModel?.teamName ?? '',
     );
-    _leaderController = TextEditingController(text: widget.initialLeader ?? '');
+    _leaderController = TextEditingController(
+      text: widget.teamModel?.teamLeader ?? '',
+    );
+    final members = widget.teamModel?.members ?? [];
     _memberControllers = List.generate(
       5,
-      (i) => TextEditingController(
-        text:
-            widget.initialMembers != null && i < widget.initialMembers!.length
-                ? widget.initialMembers![i]
-                : '',
-      ),
+      (i) => TextEditingController(text: i < members.length ? members[i] : ''),
     );
+    // 성공 메시지 감지 후 뒤로가기 (build가 아닌 initState에서 등록!)
+    ever(_viewModel.creatResponse, (res) {
+      if (!mounted) return;
+      if ((res != null && res.message == '팀이 성공적으로 생성되었습니다.') ||
+          (res != null && res.message == '팀이 성공적으로 수정되었습니다.')) {
+        Navigator.of(context).pop();
+      }
+    });
   }
 
   @override
@@ -65,14 +58,6 @@ class _TeamCreateViewState extends State<TeamCreateView> {
 
   @override
   Widget build(BuildContext context) {
-    // 성공 메시지 감지 후 뒤로가기
-    ever(_viewModel.response, (res) {
-      if ((res != null && res.message == '팀이 성공적으로 생성되었습니다.') ||
-          (res != null && res.message == '팀이 성공적으로 수정되었습니다.')) {
-        Navigator.of(context).pop(); // 무조건 한 번만 pop
-      }
-    });
-
     return Scaffold(
       appBar: AppBar(title: Text(_titleText), backgroundColor: Colors.blue),
       body: Obx(() {
@@ -120,26 +105,23 @@ class _TeamCreateViewState extends State<TeamCreateView> {
                       height: 48,
                       child: ElevatedButton(
                         onPressed: () {
-                          if (_titleText == '팀 생성') {
+                          final members =
+                              _memberControllers
+                                  .map((c) => c.text)
+                                  .where((name) => name.isNotEmpty)
+                                  .toList();
+                          if (!_isEditMode) {
                             _viewModel.createTeam(
                               teamName: _teamNameController.text,
                               leader: _leaderController.text,
-                              members:
-                                  _memberControllers
-                                      .map((c) => c.text)
-                                      .where((name) => name.isNotEmpty)
-                                      .toList(),
+                              members: members,
                             );
-                          } else if (_titleText == '팀 수정') {
+                          } else if (_isEditMode && widget.teamModel != null) {
                             _viewModel.updateTeam(
-                              teamId: widget.initTeamId!,
+                              teamId: widget.teamModel!.teamId,
                               teamName: _teamNameController.text,
                               leader: _leaderController.text,
-                              members:
-                                  _memberControllers
-                                      .map((c) => c.text)
-                                      .where((name) => name.isNotEmpty)
-                                      .toList(),
+                              members: members,
                             );
                           }
                         },

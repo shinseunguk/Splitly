@@ -1,11 +1,16 @@
-import 'package:splitly/dataSource/team_create_data_source.dart';
+import 'package:splitly/dataSource/team_data_source.dart';
 import 'package:splitly/model/team_create_response.dart';
+import 'package:splitly/model/team_model.dart';
 
-class TeamCreateRepository {
-  final TeamCreateDataSource _dataSource;
+class TeamRepository {
+  final TeamDataSource _dataSource;
 
-  TeamCreateRepository({TeamCreateDataSource? dataSource})
-    : _dataSource = dataSource ?? TeamCreateDataSource();
+  TeamRepository({TeamDataSource? dataSource})
+    : _dataSource = dataSource ?? TeamDataSource();
+
+  Future<List<TeamModel>> fetchTeams() {
+    return _dataSource.fetchTeams();
+  }
 
   Future<TeamCreateResponse> createTeam({
     required String teamName,
@@ -31,5 +36,9 @@ class TeamCreateRepository {
       leader: leader,
       members: members,
     );
+  }
+
+  Future<void> deleteTeam(int teamId) {
+    return _dataSource.deleteTeam(teamId);
   }
 }

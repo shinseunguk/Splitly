@@ -1,6 +1,6 @@
 import 'package:splitly/dataSource/team_data_source.dart';
-import 'package:splitly/model/team_create_response.dart';
-import 'package:splitly/model/team_model.dart';
+import 'package:splitly/model/team/team_create_response.dart';
+import 'package:splitly/model/team/team_model.dart';
 
 class TeamRepository {
   final TeamDataSource _dataSource;

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:splitly/model/team_create_response.dart';
-import 'package:splitly/model/team_model.dart';
+import 'package:splitly/model/team/team_create_response.dart';
+import 'package:splitly/model/team/team_model.dart';
 
 class TeamDataSource {
   Future<List<TeamModel>> fetchTeams() async {

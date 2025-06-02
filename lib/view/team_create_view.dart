@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:splitly/model/team_model.dart';
+import 'package:splitly/model/team/team_model.dart';
 import 'package:splitly/viewModel/team_create_view_model.dart';
 
 class TeamCreateView extends StatefulWidget {

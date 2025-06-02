@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:splitly/model/team/team_create_response.dart';
 import 'package:splitly/model/team/team_model.dart';
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,32 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> with RouteAware {
   final TeamViewModel _viewModel = Get.put(TeamViewModel());
   int _infoButtonCounter = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // 최초 1회 즉시 데이터 가져오기
+    _viewModel.fetchTeams();
+    // 5초마다 반복 호출되는 함수 예시
+    _startPeriodicFunction();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  void _startPeriodicFunction() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) {
+        _viewModel.fetchTeams();
+      }
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -25,19 +52,29 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // 5초마다 반복 호출되는 함수 예시
+  void didPush() {
+    // 화면에 진입할 때마다 타이머 시작
     _startPeriodicFunction();
   }
 
-  void _startPeriodicFunction() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 5));
-      if (!mounted) return false;
-      _viewModel.fetchTeams();
-      return true;
-    });
+  @override
+  void didPopNext() {
+    // 다른 화면에서 다시 돌아올 때마다 타이머 시작
+    _startPeriodicFunction();
+  }
+
+  @override
+  void didPop() {
+    // 이 화면에서 pop으로 벗어날 때 타이머 중지
+    _timer?.cancel();
+    debugPrint('HomeView: didPop (벗어남)');
+  }
+
+  @override
+  void didPushNext() {
+    // 이 화면에서 다른 화면으로 push될 때 타이머 중지
+    _timer?.cancel();
+    debugPrint('HomeView: didPushNext (벗어남)');
   }
 
   @override

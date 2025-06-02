@@ -150,7 +150,7 @@ class _TeamMangeViewState extends State<TeamManageView> with RouteAware {
             ),
             const SizedBox(height: 8),
             Text(
-              '팀원: ${team.members.join(', ')}',
+              '팀원: ${team.teamMembers.join(', ')}',
               style: const TextStyle(fontSize: 13),
             ),
             const Spacer(),

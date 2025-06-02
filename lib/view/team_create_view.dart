@@ -31,7 +31,7 @@ class _TeamCreateViewState extends State<TeamCreateView> {
     _leaderController = TextEditingController(
       text: widget.teamModel?.teamLeader ?? '',
     );
-    final members = widget.teamModel?.members ?? [];
+    final members = widget.teamModel?.teamMembers ?? [];
     _memberControllers = List.generate(
       5,
       (i) => TextEditingController(text: i < members.length ? members[i] : ''),

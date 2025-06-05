@@ -99,14 +99,16 @@ class _HomeViewState extends State<HomeView> with RouteAware {
               Center(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
+                    // 반응형 차트 크기 설정 (웹/모바일 대응)
+                    final isWide = constraints.maxWidth > 700;
                     final chartWidth =
-                        constraints.maxWidth > 500
-                            ? 500.0
-                            : constraints.maxWidth;
+                        isWide
+                            ? constraints.maxWidth * 0.7
+                            : constraints.maxWidth * 0.95;
                     final chartHeight =
-                        constraints.maxHeight > 320
-                            ? 320.0
-                            : constraints.maxHeight;
+                        isWide
+                            ? constraints.maxHeight * 0.7
+                            : constraints.maxHeight * 0.45;
                     return SizedBox(
                       width: chartWidth,
                       height: chartHeight,
@@ -126,8 +128,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                                     .teamScore ??
                                                 0)
                                             .toDouble(),
-                                    color: Colors.blue,
-                                    width: 32,
+                                    color: Colors.yellow,
+                                    width: isWide ? 64 : 32,
                                   ),
                                 ],
                                 showingTooltipIndicators: [0],
@@ -157,8 +159,9 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                     ),
                                     child: Text(
                                       teams[idx].teamName,
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: isWide ? 30 : 16,
                                         overflow: TextOverflow.visible,
                                       ),
                                       textAlign: TextAlign.center,

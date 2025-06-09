@@ -129,7 +129,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                                 0)
                                             .toDouble(),
                                     color: Colors.yellow,
-                                    width: isWide ? 64 : 32,
+                                    width: isWide ? 48 : 32,
                                   ),
                                 ],
                                 showingTooltipIndicators: [0],
@@ -161,7 +161,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                       teams[idx].teamName,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: isWide ? 30 : 16,
+                                        fontSize: isWide ? 25 : 16,
                                         overflow: TextOverflow.visible,
                                       ),
                                       textAlign: TextAlign.center,
@@ -180,10 +180,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                   1.2)
                               .clamp(1.0, double.infinity), // 임시 maxY
                         ),
-                        swapAnimationDuration: const Duration(
-                          milliseconds: 2000,
-                        ),
-                        swapAnimationCurve: Curves.easeInOut,
+                        duration: const Duration(milliseconds: 2000),
+                        curve: Curves.easeInOut,
                       ),
                     );
                   },

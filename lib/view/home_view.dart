@@ -128,7 +128,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                                     .teamScore ??
                                                 0)
                                             .toDouble(),
-                                    color: Colors.yellow,
+                                    color: Colors.blue,
                                     width: isWide ? 48 : 32,
                                   ),
                                 ],
@@ -179,6 +179,25 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                       .reduce((a, b) => a > b ? a : b) *
                                   1.2)
                               .clamp(1.0, double.infinity), // 임시 maxY
+                          barTouchData: BarTouchData(
+                            touchTooltipData: BarTouchTooltipData(
+                              getTooltipItem: (
+                                group,
+                                groupIndex,
+                                rod,
+                                rodIndex,
+                              ) {
+                                return BarTooltipItem(
+                                  rod.toY.toInt().toString(), // 소수점 없이 정수로 표시
+                                  TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18, // 글자 크게
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                         duration: const Duration(milliseconds: 2000),
                         curve: Curves.easeInOut,

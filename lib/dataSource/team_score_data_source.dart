@@ -1,138 +1,72 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:splitly/model/score/team_score_model.dart';
 
 class TeamScoreDataSource {
   Future<List<TeamScoreModel>> fetchTeamScores() async {
-    // 실제 API 연동 시에는 http 패키지 등으로 GET 요청을 보내고, 응답을 파싱합니다.
-    // 아래는 예시/mock 데이터입니다.
-    await Future.delayed(const Duration(milliseconds: 500));
-    return [
-      TeamScoreModel(
-        teamId: 3,
-        teamName: '다크호스',
-        teamScore: 27,
-        teamRank: 1,
-        teamLeader: '이재명',
-        teamMembers: ['김유신', '이순신', '신사임당'],
+    final response = await http.get(
+      Uri.parse(
+        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
       ),
-      TeamScoreModel(
-        teamId: 1,
-        teamName: '불사조',
-        teamScore: 25,
-        teamRank: 2,
-        teamLeader: '김문수',
-        teamMembers: ['홍길동', '김영희', '박철수'],
-      ),
-      TeamScoreModel(
-        teamId: 2,
-        teamName: '무적함대',
-        teamScore: 19,
-        teamRank: 3,
-        teamLeader: '이준석',
-        teamMembers: ['강감찬', '유관순', '안중근'],
-      ),
-    ];
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => TeamScoreModel.fromJson(e)).toList();
+    } else {
+      throw Exception('팀 점수 데이터를 불러오지 못했습니다');
+    }
   }
 
   Future<List<TeamScoreModel>> resetTeamScores() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final allTeams = [
-      TeamScoreModel(
-        teamId: 1,
-        teamName: '불사조',
-        teamScore: 0,
-        teamRank: null,
-        teamLeader: '김문수',
-        teamMembers: ['홍길동', '김영희', '박철수'],
+    final response = await http.delete(
+      Uri.parse(
+        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
       ),
-      TeamScoreModel(
-        teamId: 2,
-        teamName: '무적함대',
-        teamScore: 0,
-        teamRank: null,
-        teamLeader: '이준석',
-        teamMembers: ['강감찬', '유관순', '안중근'],
-      ),
-      TeamScoreModel(
-        teamId: 3,
-        teamName: '다크호스',
-        teamScore: 0,
-        teamRank: null,
-        teamLeader: '이재명',
-        teamMembers: ['김유신', '이순신', '신사임당'],
-      ),
-    ];
-    return allTeams;
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => TeamScoreModel.fromJson(e)).toList();
+    } else {
+      throw Exception('팀 점수 초기화에 실패했습니다: \n${response.body}');
+    }
   }
 
   Future<List<TeamScoreModel>> updateTeamScore({
     required int teamId,
     required int score,
   }) async {
-    print('팀 점수 업데이트 요청: teamId=$teamId, score=$score');
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    List<TeamScoreModel> allTeams = [
-      TeamScoreModel(
-        teamId: 1,
-        teamName: '불사조',
-        teamScore: 25,
-        teamRank: 1,
-        teamLeader: '김문수',
-        teamMembers: ['홍길동', '김영희', '박철수'],
+    final response = await http.post(
+      Uri.parse(
+        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
       ),
-      TeamScoreModel(
-        teamId: 2,
-        teamName: '무적함대',
-        teamScore: 19,
-        teamRank: 2,
-        teamLeader: '이준석',
-        teamMembers: ['강감찬', '유관순', '안중근'],
-      ),
-      TeamScoreModel(
-        teamId: 3,
-        teamName: '다크호스',
-        teamScore: 8,
-        teamRank: 3,
-        teamLeader: '이재명',
-        teamMembers: ['김유신', '이순신', '신사임당'],
-      ),
-    ];
-    return allTeams;
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'teamId': teamId, 'score': score}),
+    );
+    if (response.statusCode == 201) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => TeamScoreModel.fromJson(e)).toList();
+    } else {
+      throw Exception('팀 점수 업데이트에 실패했습니다: \n${response.body}');
+    }
   }
 
   Future<List<TeamScoreModel>> changeTeamScore({
     required int teamId,
     required int score,
   }) async {
-    print('팀 점수 변경 요청: teamId=$teamId, score=$score');
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    List<TeamScoreModel> allTeams = [
-      TeamScoreModel(
-        teamId: 1,
-        teamName: '불사조',
-        teamScore: 25,
-        teamRank: 1,
-        teamLeader: '김문수',
-        teamMembers: ['홍길동', '김영희', '박철수'],
+    final response = await http.put(
+      Uri.parse(
+        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores/$teamId',
       ),
-      TeamScoreModel(
-        teamId: 2,
-        teamName: '무적함대',
-        teamScore: 19,
-        teamRank: 2,
-        teamLeader: '이준석',
-        teamMembers: ['강감찬', '유관순', '안중근'],
-      ),
-      TeamScoreModel(
-        teamId: 3,
-        teamName: '다크호스',
-        teamScore: 8,
-        teamRank: 3,
-        teamLeader: '이재명',
-        teamMembers: ['김유신', '이순신', '신사임당'],
-      ),
-    ];
-    return allTeams;
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'score': score}),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => TeamScoreModel.fromJson(e)).toList();
+    } else {
+      throw Exception('팀 점수 변경에 실패했습니다: \n${response.body}');
+    }
   }
 }

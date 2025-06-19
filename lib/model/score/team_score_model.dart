@@ -5,6 +5,8 @@ class TeamScoreModel {
   final int? teamRank;
   final String teamLeader;
   final List<String> teamMembers;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   TeamScoreModel({
     required this.teamId,
@@ -13,6 +15,8 @@ class TeamScoreModel {
     required this.teamRank,
     required this.teamLeader,
     required this.teamMembers,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory TeamScoreModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,10 @@ class TeamScoreModel {
           (json['teamMembers'] as List<dynamic>)
               .map((e) => e as String)
               .toList(),
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
@@ -36,6 +44,8 @@ class TeamScoreModel {
     'teamRank': teamRank,
     'teamLeader': teamLeader,
     'teamMembers': teamMembers,
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
   };
 
   TeamScoreModel copyWith({
@@ -45,6 +55,8 @@ class TeamScoreModel {
     int? teamRank,
     String? teamLeader,
     List<String>? teamMembers,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return TeamScoreModel(
       teamId: teamId ?? this.teamId,
@@ -53,6 +65,8 @@ class TeamScoreModel {
       teamRank: teamRank ?? this.teamRank,
       teamLeader: teamLeader ?? this.teamLeader,
       teamMembers: teamMembers ?? this.teamMembers,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

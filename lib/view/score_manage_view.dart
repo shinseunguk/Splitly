@@ -148,7 +148,7 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                                   for (final score in [10, 5, 3, 1])
                                     ElevatedButton(
                                       onPressed: () {
-                                        _viewModel.changeTeamScore(
+                                        _viewModel.updateTeamScore(
                                           team.teamId,
                                           score,
                                         );
@@ -165,7 +165,7 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                                   for (final score in [10, 5, 3, 1])
                                     ElevatedButton(
                                       onPressed: () {
-                                        _viewModel.changeTeamScore(
+                                        _viewModel.updateTeamScore(
                                           team.teamId,
                                           -score,
                                         );

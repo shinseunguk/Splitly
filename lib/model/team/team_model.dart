@@ -5,6 +5,8 @@ class TeamModel {
   final int teamRank;
   final String teamLeader;
   final List<String> teamMembers;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   TeamModel({
     required this.teamId,
@@ -13,6 +15,8 @@ class TeamModel {
     required this.teamRank,
     required this.teamLeader,
     required this.teamMembers,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory TeamModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,10 @@ class TeamModel {
           (json['teamMembers'] as List<dynamic>)
               .map((e) => e as String)
               .toList(),
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
@@ -36,5 +44,7 @@ class TeamModel {
     'teamRank': teamRank,
     'teamLeader': teamLeader,
     'teamMembers': teamMembers,
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
   };
 }

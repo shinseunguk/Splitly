@@ -177,7 +177,31 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                                     child: TextField(
                                       keyboardType: TextInputType.text,
                                       decoration: const InputDecoration(
-                                        hintText: '직접입력',
+                                        hintText: 'plus',
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 8,
+                                        ),
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onSubmitted: (score) {
+                                        final value = int.tryParse(score);
+                                        if (value != null) {
+                                          _viewModel.updateTeamScore(
+                                            team.teamId,
+                                            value,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 70,
+                                    child: TextField(
+                                      keyboardType: TextInputType.text,
+                                      decoration: const InputDecoration(
+                                        hintText: 'change',
                                         isDense: true,
                                         contentPadding: EdgeInsets.symmetric(
                                           vertical: 8,

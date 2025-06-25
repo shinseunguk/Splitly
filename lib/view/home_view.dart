@@ -161,7 +161,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                       teams[idx].teamName,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: isWide ? 36 : 24, // 폰트 크기 증가
+                                        fontSize: isWide ? 40 : 24, // 폰트 크기 증가
                                         overflow: TextOverflow.visible,
                                       ),
                                       textAlign: TextAlign.center,
@@ -192,7 +192,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                   TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 22, // 글자 크게
+                                    fontSize: 28, // 글자 크게
                                   ),
                                 );
                               },

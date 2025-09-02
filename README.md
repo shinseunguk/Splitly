@@ -131,3 +131,6 @@ lib/
 **개발자**: Incross Team  
 **버전**: 1.0.0  
 **최종 업데이트**: 2024년
+
+
+<!-- Security scan triggered at 2025-09-02 15:04:26 -->

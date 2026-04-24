@@ -8,7 +8,7 @@ class TeamDataSource {
   Future<List<TeamModel>> fetchTeams() async {
     final response = await http.get(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores/',
+        'http://34.22.91.73:3000/api/v1/admin/scores/',
       ),
     );
 
@@ -31,7 +31,7 @@ class TeamDataSource {
     print('팀원: ${members.join(', ')}');
     final response = await http.post(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/teams',
+        'http://34.22.91.73:3000/api/v1/admin/teams',
       ),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
@@ -56,7 +56,7 @@ class TeamDataSource {
   }) async {
     final response = await http.put(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/teams/$teamId',
+        'http://34.22.91.73:3000/api/v1/admin/teams/$teamId',
       ),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
@@ -77,7 +77,7 @@ class TeamDataSource {
   Future<void> deleteTeam(int teamId) async {
     final response = await http.delete(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/teams/$teamId',
+        'http://34.22.91.73:3000/api/v1/admin/teams/$teamId',
       ),
       headers: {'Content-Type': 'application/json'},
     );

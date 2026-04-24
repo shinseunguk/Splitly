@@ -11,7 +11,7 @@ class ScoreManageView extends StatefulWidget {
 
 class _ScoreManageViewState extends State<ScoreManageView> {
   final TeamScoreViewModel _viewModel = Get.put(TeamScoreViewModel());
-  RxInt? _openedIndex = RxInt(-1); // -1이면 아무것도 안 열림
+  final RxSet<int> _openedIndexes = <int>{}.obs;
 
   @override
   void initState() {
@@ -77,10 +77,10 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      if (_openedIndex!.value == index) {
-                        _openedIndex!.value = -1;
+                      if (_openedIndexes.contains(index)) {
+                        _openedIndexes.remove(index);
                       } else {
-                        _openedIndex!.value = index;
+                        _openedIndexes.add(index);
                       }
                     },
                     child: Card(
@@ -139,13 +139,13 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                               '팀원: ${team.teamMembers.join(', ')}',
                               style: const TextStyle(fontSize: 14),
                             ),
-                            if (_openedIndex!.value == index) ...[
+                            if (_openedIndexes.contains(index)) ...[
                               const SizedBox(height: 16),
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: [
-                                  for (final score in [10, 5, 3, 1])
+                                  for (final score in [5, 3, 2, 1])
                                     ElevatedButton(
                                       onPressed: () {
                                         _viewModel.updateTeamScore(
@@ -162,7 +162,7 @@ class _ScoreManageViewState extends State<ScoreManageView> {
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: [
-                                  for (final score in [10, 5, 3, 1])
+                                  for (final score in [5, 3, 2, 1])
                                     ElevatedButton(
                                       onPressed: () {
                                         _viewModel.updateTeamScore(

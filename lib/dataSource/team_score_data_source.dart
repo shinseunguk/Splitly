@@ -6,7 +6,7 @@ class TeamScoreDataSource {
   Future<List<TeamScoreModel>> fetchTeamScores() async {
     final response = await http.get(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
+        'http://34.22.91.73:3000/api/v1/admin/scores',
       ),
     );
     if (response.statusCode == 200) {
@@ -20,7 +20,7 @@ class TeamScoreDataSource {
   Future<List<TeamScoreModel>> resetTeamScores() async {
     final response = await http.delete(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
+        'http://34.22.91.73:3000/api/v1/admin/scores',
       ),
       headers: {'Content-Type': 'application/json'},
     );
@@ -38,7 +38,7 @@ class TeamScoreDataSource {
   }) async {
     final response = await http.post(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores',
+        'http://34.22.91.73:3000/api/v1/admin/scores',
       ),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'teamId': teamId, 'score': score}),
@@ -57,7 +57,7 @@ class TeamScoreDataSource {
   }) async {
     final response = await http.put(
       Uri.parse(
-        'https://incross-workshop-337441565570.asia-northeast3.run.app/api/v1/admin/scores/$teamId',
+        'http://34.22.91.73:3000/api/v1/admin/scores/$teamId',
       ),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'score': score}),

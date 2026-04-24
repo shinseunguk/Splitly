@@ -77,22 +77,42 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     debugPrint('HomeView: didPushNext (벗어남)');
   }
 
+  Widget _buildScaffoldWithMenu(Widget child) {
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          top: 16,
+          right: 16,
+          child: IconButton(
+            icon: const Icon(Icons.info_outline, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TeamMenuView()),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         body: Obx(() {
-          // if (_viewModel.isLoading.value) {
-          //   return const Center(child: CircularProgressIndicator());
-          // }
           if (_viewModel.errorMessage.isNotEmpty) {
-            return Center(
-              child: Text('에러: \\${_viewModel.errorMessage.value}'),
+            return _buildScaffoldWithMenu(
+              Center(child: Text('에러: ${_viewModel.errorMessage.value}')),
             );
           }
           final teams = _viewModel.selectResponse.value ?? [];
           if (teams.isEmpty) {
-            return const Center(child: Text('팀 데이터가 없습니다.'));
+            return _buildScaffoldWithMenu(
+              const Center(child: Text('팀 데이터가 없습니다.')),
+            );
           }
           return Stack(
             children: [
@@ -151,8 +171,9 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                 reservedSize: 48,
                                 getTitlesWidget: (value, meta) {
                                   final idx = value.toInt();
-                                  if (idx < 0 || idx >= teams.length)
+                                  if (idx < 0 || idx >= teams.length) {
                                     return Container();
+                                  }
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 6.0,

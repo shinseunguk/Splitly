@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:splitly/model/score/team_score_model.dart';
+import 'package:splitly/viewModel/game_state_view_model.dart';
 import 'package:splitly/viewModel/team_score_view_model.dart';
 
 class ScoreManageView extends StatefulWidget {
@@ -14,35 +16,65 @@ class ScoreManageView extends StatefulWidget {
 }
 
 class _ScoreManageViewState extends State<ScoreManageView> {
+  static const Duration _pollInterval = Duration(seconds: 3);
+
   final TeamScoreViewModel _viewModel = Get.put(TeamScoreViewModel());
+  final GameStateViewModel _gameStateViewModel = Get.put(GameStateViewModel());
   final RxSet<int> _openedIndexes = <int>{}.obs;
   final ConfettiController _confettiController = ConfettiController(
     duration: const Duration(seconds: 3),
   );
 
+  Timer? _pollingTimer;
+  DateTime? _lastSeenEndedAt;
+  bool _isCelebrationOpen = false;
+
   @override
   void initState() {
     super.initState();
     _viewModel.fetchTeamScores();
+    _bootstrapGameState();
+    _startPolling();
   }
 
   @override
   void dispose() {
+    _pollingTimer?.cancel();
     _confettiController.dispose();
     super.dispose();
   }
 
-  void _showGameEndCelebration() {
-    final scores = _viewModel.teamScores.value;
-    if (scores == null || scores.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('팀 데이터가 없습니다.')),
-      );
+  Future<void> _bootstrapGameState() async {
+    await _gameStateViewModel.fetchGameState();
+    // Seed the last-seen marker so the user isn't greeted by a stale celebration.
+    _lastSeenEndedAt = _gameStateViewModel.gameState.value?.endedAt;
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(_pollInterval, (_) async {
+      await _gameStateViewModel.fetchGameState();
+      _handleGameStateChange(_gameStateViewModel.gameState.value?.endedAt);
+    });
+  }
+
+  void _handleGameStateChange(DateTime? endedAt) {
+    if (endedAt == null) {
+      _lastSeenEndedAt = null;
       return;
     }
+    if (_lastSeenEndedAt == endedAt) return;
+    _lastSeenEndedAt = endedAt;
+    _triggerCelebration();
+  }
+
+  void _triggerCelebration() {
+    if (!mounted || _isCelebrationOpen) return;
+    final scores = _viewModel.teamScores.value;
+    if (scores == null || scores.isEmpty) return;
     final winner = scores.reduce(
       (a, b) => a.teamScore >= b.teamScore ? a : b,
     );
+    _isCelebrationOpen = true;
     _confettiController.play();
     showDialog<void>(
       context: context,
@@ -56,25 +88,44 @@ class _ScoreManageViewState extends State<ScoreManageView> {
           Navigator.of(dialogContext).pop();
         },
       ),
-    );
+    ).whenComplete(() {
+      _isCelebrationOpen = false;
+    });
   }
 
-  void _confirmGameEnd() {
-    showDialog<void>(
+  Future<void> _onGameEndPressed() async {
+    final isEnded = _gameStateViewModel.gameState.value?.isEnded ?? false;
+    final confirmed = await _confirmToggle(isCurrentlyEnded: isEnded);
+    if (confirmed != true) return;
+    await _gameStateViewModel.toggleGameState();
+    final error = _gameStateViewModel.errorMessage.value;
+    if (error.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+    // Immediately react to the new state on the admin's own device.
+    _handleGameStateChange(_gameStateViewModel.gameState.value?.endedAt);
+  }
+
+  Future<bool?> _confirmToggle({required bool isCurrentlyEnded}) {
+    final title = isCurrentlyEnded ? '게임 재개' : '게임 종료';
+    final message = isCurrentlyEnded
+        ? '게임을 다시 시작하시겠습니까?'
+        : '게임을 종료하고 우승 팀을 공개하시겠습니까?';
+    return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('게임 종료'),
-        content: const Text('게임을 종료하고 우승 팀을 공개하시겠습니까?'),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text('취소'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _showGameEndCelebration();
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             child: const Text('확인'),
           ),
         ],
@@ -89,11 +140,17 @@ class _ScoreManageViewState extends State<ScoreManageView> {
         title: const Text('팀 스코어 관리'),
         backgroundColor: Colors.blue,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.emoji_events),
-            tooltip: '게임 종료',
-            onPressed: _confirmGameEnd,
-          ),
+          Obx(() {
+            final isEnded =
+                _gameStateViewModel.gameState.value?.isEnded ?? false;
+            return IconButton(
+              icon: Icon(
+                isEnded ? Icons.play_arrow : Icons.emoji_events,
+              ),
+              tooltip: isEnded ? '게임 재개' : '게임 종료',
+              onPressed: _onGameEndPressed,
+            );
+          }),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: '새로고침',

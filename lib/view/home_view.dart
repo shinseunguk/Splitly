@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'package:confetti/confetti.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:splitly/main.dart' show routeObserver;
+import 'package:splitly/model/team/team_model.dart';
 import 'package:splitly/view/team_menu_view.dart.dart';
+import 'package:splitly/view/widget/game_end_dialog.dart';
+import 'package:splitly/viewModel/game_state_view_model.dart';
 import 'package:splitly/viewModel/team_create_view_model.dart';
 
 class HomeView extends StatefulWidget {
@@ -15,9 +19,18 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with RouteAware {
+  static const Duration _gameStatePollInterval = Duration(seconds: 3);
+
   final TeamViewModel _viewModel = Get.put(TeamViewModel());
+  final GameStateViewModel _gameStateViewModel = Get.put(GameStateViewModel());
+  final ConfettiController _confettiController = ConfettiController(
+    duration: const Duration(seconds: 3),
+  );
   int _infoButtonCounter = 0;
   Timer? _timer;
+  Timer? _gameStateTimer;
+  DateTime? _lastSeenEndedAt;
+  bool _isCelebrationOpen = false;
 
   @override
   void initState() {
@@ -26,11 +39,15 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     _viewModel.fetchTeams();
     // 5초마다 반복 호출되는 함수 예시
     _startPeriodicFunction();
+    _bootstrapGameState();
+    _startGameStatePolling();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _gameStateTimer?.cancel();
+    _confettiController.dispose();
     routeObserver.unsubscribe(this);
     super.dispose();
   }
@@ -41,6 +58,60 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       if (mounted) {
         _viewModel.fetchTeams();
       }
+    });
+  }
+
+  Future<void> _bootstrapGameState() async {
+    await _gameStateViewModel.fetchGameState();
+    // Seed the marker so participants who join mid-game aren't greeted by a stale celebration.
+    _lastSeenEndedAt = _gameStateViewModel.gameState.value?.endedAt;
+  }
+
+  void _startGameStatePolling() {
+    _gameStateTimer?.cancel();
+    _gameStateTimer = Timer.periodic(_gameStatePollInterval, (_) async {
+      if (!mounted) return;
+      await _gameStateViewModel.fetchGameState();
+      _handleGameStateChange(_gameStateViewModel.gameState.value?.endedAt);
+    });
+  }
+
+  void _handleGameStateChange(DateTime? endedAt) {
+    if (endedAt == null) {
+      _lastSeenEndedAt = null;
+      return;
+    }
+    if (_lastSeenEndedAt == endedAt) return;
+    _lastSeenEndedAt = endedAt;
+    _triggerCelebration();
+  }
+
+  void _triggerCelebration() {
+    if (!mounted || _isCelebrationOpen) return;
+    final teams = _viewModel.selectResponse.value;
+    if (teams == null || teams.isEmpty) return;
+    final TeamModel winner = teams.reduce(
+      (a, b) => a.teamScore >= b.teamScore ? a : b,
+    );
+    _isCelebrationOpen = true;
+    _confettiController.play();
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) => GameEndDialog(
+        teamName: winner.teamName,
+        teamScore: winner.teamScore,
+        teamLeader: winner.teamLeader,
+        teamMembers: winner.teamMembers,
+        confettiController: _confettiController,
+        onClose: () {
+          _confettiController.stop();
+          Navigator.of(dialogContext).pop();
+        },
+      ),
+    ).whenComplete(() {
+      _isCelebrationOpen = false;
     });
   }
 
@@ -55,18 +126,21 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   void didPush() {
     // 화면에 진입할 때마다 타이머 시작
     _startPeriodicFunction();
+    _startGameStatePolling();
   }
 
   @override
   void didPopNext() {
     // 다른 화면에서 다시 돌아올 때마다 타이머 시작
     _startPeriodicFunction();
+    _startGameStatePolling();
   }
 
   @override
   void didPop() {
     // 이 화면에서 pop으로 벗어날 때 타이머 중지
     _timer?.cancel();
+    _gameStateTimer?.cancel();
     debugPrint('HomeView: didPop (벗어남)');
   }
 
@@ -74,6 +148,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   void didPushNext() {
     // 이 화면에서 다른 화면으로 push될 때 타이머 중지
     _timer?.cancel();
+    _gameStateTimer?.cancel();
     debugPrint('HomeView: didPushNext (벗어남)');
   }
 

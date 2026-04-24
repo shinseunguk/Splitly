@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:splitly/model/score/team_score_model.dart';
+import 'package:splitly/view/widget/game_end_dialog.dart';
 import 'package:splitly/viewModel/game_state_view_model.dart';
 import 'package:splitly/viewModel/team_score_view_model.dart';
 
@@ -80,8 +79,11 @@ class _ScoreManageViewState extends State<ScoreManageView> {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black87,
-      builder: (dialogContext) => _GameEndDialog(
-        winner: winner,
+      builder: (dialogContext) => GameEndDialog(
+        teamName: winner.teamName,
+        teamScore: winner.teamScore,
+        teamLeader: winner.teamLeader,
+        teamMembers: winner.teamMembers,
         confettiController: _confettiController,
         onClose: () {
           _confettiController.stop();
@@ -363,99 +365,3 @@ class _ScoreManageViewState extends State<ScoreManageView> {
   }
 }
 
-class _GameEndDialog extends StatelessWidget {
-  final TeamScoreModel winner;
-  final ConfettiController confettiController;
-  final VoidCallback onClose;
-
-  const _GameEndDialog({
-    required this.winner,
-    required this.confettiController,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 2),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.emoji_events, color: Colors.amber, size: 96),
-                const SizedBox(height: 16),
-                const Text(
-                  '🎉 우승 팀 🎉',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  winner.teamName,
-                  style: const TextStyle(
-                    fontSize: 56,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '최종 점수: ${winner.teamScore}점',
-                  style: const TextStyle(fontSize: 22, color: Colors.black87),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '팀장: ${winner.teamLeader}',
-                  style: const TextStyle(fontSize: 16, color: Colors.black54),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: onClose,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 14,
-                    ),
-                  ),
-                  child: const Text('닫기', style: TextStyle(fontSize: 16)),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            blastDirection: pi / 2,
-            emissionFrequency: 0.05,
-            numberOfParticles: 30,
-            maxBlastForce: 40,
-            minBlastForce: 10,
-            gravity: 0.2,
-            shouldLoop: true,
-            colors: const [
-              Colors.red,
-              Colors.blue,
-              Colors.green,
-              Colors.orange,
-              Colors.purple,
-              Colors.yellow,
-              Colors.pink,
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}

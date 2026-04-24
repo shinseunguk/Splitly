@@ -16,7 +16,7 @@ class _TeamCreateViewState extends State<TeamCreateView> {
   final TeamViewModel _viewModel = Get.put(TeamViewModel());
   late final TextEditingController _teamNameController;
   late final TextEditingController _leaderController;
-  late final List<TextEditingController> _memberControllers;
+  final List<TextEditingController> _memberControllers = [];
   late final bool _isEditMode;
   late final String _titleText;
 
@@ -32,10 +32,13 @@ class _TeamCreateViewState extends State<TeamCreateView> {
       text: widget.teamModel?.teamLeader ?? '',
     );
     final members = widget.teamModel?.teamMembers ?? [];
-    _memberControllers = List.generate(
-      5,
-      (i) => TextEditingController(text: i < members.length ? members[i] : ''),
-    );
+    // 기존 팀원만큼 필드를 만들되, 최소 1개는 보여준다.
+    final initialCount = members.isEmpty ? 1 : members.length;
+    for (var i = 0; i < initialCount; i++) {
+      _memberControllers.add(
+        TextEditingController(text: i < members.length ? members[i] : ''),
+      );
+    }
     // 성공 메시지 감지 후 뒤로가기 (build가 아닌 initState에서 등록!)
     ever(_viewModel.creatResponse, (res) {
       if (!mounted) return;
@@ -54,6 +57,21 @@ class _TeamCreateViewState extends State<TeamCreateView> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  void _addMemberField() {
+    setState(() {
+      _memberControllers.add(TextEditingController());
+    });
+  }
+
+  void _removeMemberField(int index) {
+    setState(() {
+      _memberControllers.removeAt(index).dispose();
+      if (_memberControllers.isEmpty) {
+        _memberControllers.add(TextEditingController());
+      }
+    });
   }
 
   @override
@@ -82,18 +100,47 @@ class _TeamCreateViewState extends State<TeamCreateView> {
                   const Text("팀장 :"),
                   TextField(controller: _leaderController),
                   const SizedBox(height: 24),
-                  const Text("팀원 (최대 5명):"),
-                  ...List.generate(
-                    5,
-                    (i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: TextField(
-                        controller: _memberControllers[i],
-                        decoration: InputDecoration(hintText: '팀원 ${i + 1}'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("팀원 :"),
+                      TextButton.icon(
+                        onPressed: _addMemberField,
+                        icon: const Icon(Icons.add),
+                        label: const Text('팀원 추가'),
                       ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _memberControllers.length,
+                      itemBuilder: (context, i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _memberControllers[i],
+                                  decoration: InputDecoration(
+                                    hintText: '팀원 ${i + 1}',
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.remove_circle_outline,
+                                  color: Colors.redAccent,
+                                ),
+                                tooltip: '삭제',
+                                onPressed: () => _removeMemberField(i),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(
                       left: 20,
@@ -105,11 +152,10 @@ class _TeamCreateViewState extends State<TeamCreateView> {
                       height: 48,
                       child: ElevatedButton(
                         onPressed: () {
-                          final members =
-                              _memberControllers
-                                  .map((c) => c.text)
-                                  .where((name) => name.isNotEmpty)
-                                  .toList();
+                          final members = _memberControllers
+                              .map((c) => c.text)
+                              .where((name) => name.isNotEmpty)
+                              .toList();
                           if (!_isEditMode) {
                             _viewModel.createTeam(
                               teamName: _teamNameController.text,
